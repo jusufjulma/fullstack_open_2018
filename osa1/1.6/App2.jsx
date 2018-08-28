@@ -4,33 +4,46 @@ class App2 extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      selected: 2
+      selected: Math.round(Math.random()*5),
+      votes: [0, 0, 0, 0, 0, 0],
+      mostVoted: null
     }
   }
 
   nextAnecdote = () => {
     let random = Math.round(Math.random()*5);
+    while (random === this.state.selected){     // it's pseudorandom anyways
+      random = Math.round(Math.random()*5);
+    }
     this.setState({
       selected: random
     })
   }
   voteAnecdote = (asd) => {
 
-    // votecopy[this.state.selected] += 1;
+    let vote = [...this.state.votes]  // creates a copy of state array
+    vote[this.state.selected]++       // which then gets modified
+    this.setState({                   // and overwritten to state
+      votes: vote                     // here
+    })
 
-    console.log(this.state.selected)
-    console.log(asd)
-
-// array, jossa kuusi alkiota; aina kun painetaan "vote",
-// anekdoottia vastaavan indexin alkiota kasvatetaan yhdell
-
+    this.winningAnecdote(vote)     // executes the function which
+  }                                // figures out the most voted one
+  winningAnecdote = (votearray) => {
+    let mostVotes = this.state.mostVoted
+    for (let i = 0; i < votearray.length; i++) {
+      if (votearray[i] > votearray[mostVotes] || mostVotes === null){
+        mostVotes = i
+      }
+    }
+    this.setState({
+      mostVoted: mostVotes
+    })
 
   }
 
   render() {
-    // const votings = [0, 0, 0, 0, 0, 0];
-    // const votecopy = [...votings];
-    //
+
     const anecdotes = [
       'If it hurts, do it more often',
       'Adding manpower to a late software project makes it later!',
@@ -43,30 +56,61 @@ class App2 extends React.Component {
       position: "absolute",
       top: "0px",
       left: "300px",
-      width: "300px",
-      padding: "0 2rem 2rem 2rem",
-      border: "dashed 5px black"
+      width: "300px"
     }
     const anecdoteStyle = {
-      fontStyle: "italic"
+      fontStyle: "italic",
+      border: "dashed 5px #333",
+      backgroundColor: "#fafafa",
+      padding: "2rem 2rem 2rem 2rem",
+      width: "300px"
     }
     const buttonStyle = {
-      position: "absolute",
-      top: "250px"
+      fontSize: "100%",
+      width: "8rem",
+      display: "inline",
+      margin: "0rem 0.2rem 0rem 0.5rem"
     }
+    const buttonContainer = {
+      position: "fixed",
+      top: "300px"
+    }
+    const voteScreen = {
+      position: "fixed",
+      top: "320px"
+    }
+
     const button = (whichFunction, label) => {
-      return <button onClick={whichFunction}>{label}</button>
+      return <button style={buttonStyle} onClick={whichFunction}>{label}</button>
+    }
+    const mostVoted = (votes, mostVoted) => {
+      if (mostVoted === null) {
+        return
+      }
+      return(
+        <div>
+          <h2>Anecdote with most votes:</h2>
+          <p style={anecdoteStyle}>{anecdotes[mostVoted]}</p>
+          <p>Has been voted {votes[mostVoted]} times</p>
+        </div>
+      )
     }
 
     return (
       <div style={divStyle}>
-        <h1>Anekdootit</h1>
-        <p style={anecdoteStyle}>
-          {anecdotes[this.state.selected]}
-        </p>
-        <div style={buttonStyle}>
-          {button(this.nextAnecdote, "Next anecdote")}
-          {button(this.voteAnecdote, "Vote")}
+          <div>
+            <h1>Anekdootit</h1>
+            <p style={anecdoteStyle}>
+              {anecdotes[this.state.selected]}
+            </p>
+            <div style={buttonContainer}>
+              {button(this.nextAnecdote, "Next anecdote")}
+              {button(this.voteAnecdote, "Vote")}
+              {/* {button(this.winningAnecdote, "WHO WINS")} */}
+            </div>
+          </div>
+        <div style={voteScreen}>
+          {mostVoted(this.state.votes, this.state.mostVoted)}
         </div>
       </div>
     )
